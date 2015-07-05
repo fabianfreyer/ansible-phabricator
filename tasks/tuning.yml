@@ -1,0 +1,29 @@
+---
+
+- name: configure mysql max_allowed_packet
+  replace: dest=/etc/mysql/my.cnf
+              regexp='^max_allowed_packet(\s+)?=\s?(\d+)?[kMG]?'
+              replace='max_allowed_packet      = 32M'
+  notify: restart mysql
+
+- name: configure mysql tunables
+  lineinfile: dest=/etc/mysql/my.cnf
+              regexp="{{ item.regexp }}"
+              line"={{ item.line }}"
+              insertafter='\[mysqld\]'
+  with_items:
+  - { regexp: '^ft_boolean_syntax(\s+)?=\s?(.+)?', line: "ft_boolean_syntax = ' |-><()~*:\\\"\\\"&^'" }
+  - { regexp: '^ft_stopword_file(\s+)?=\s?(.+)?', line: "ft_stopword_file=/srv/phabricator/resources/sql/stopwords.txt" }
+  - { regexp: '^ft_min_word_len(\s+)?=\s?(\d+)?', line: "ft_min_word_len = 3" }
+  - { regexp: '^sql_mode(\s+)?=\s?(.+)?', line: "sql_mode=STRICT_ALL_TABLES" }
+  - { regexp: '^innodb_buffer_pool_size(\s+)?=\s?(.+)?', line: "innodb_buffer_pool_size=800M" }
+  notify: restart mysql
+
+- name: set php tunables
+  lineinfile: dest=/etc/php5/fpm/php.ini
+              regexp="{{ item.regexp }}"
+              line"={{ item.line }}"
+  with_items:
+  - { regexp: '^;?post_max_size', line: 'post_max_size = 32M' }
+  - { regexp: '^;?opcache.validate_timestamps', line: 'opcache.validate_timestamps=0' } 
+  notify: restart php5-fpm

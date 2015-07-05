@@ -1,0 +1,12 @@
+---
+- name: reload nginx
+  service: name=nginx state=reloaded
+
+- name: restart php5-fpm
+  service: name=php5-fpm state=restarted
+
+- name: restart mysql
+  service: name=mysql state=restarted
+
+- name: restart phabricator daemons
+  service: name=phd state=restarted

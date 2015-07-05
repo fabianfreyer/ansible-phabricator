@@ -1,0 +1,119 @@
+---
+
+# This ansible role sets up a phabricator instance using nginx + mysql.
+# TODO:
+# - Fix git ssh access (possibly use a dropbear listening on a different port)
+#   Problem here is using a non-standard port, since it is kinda problematic to
+#   move the SSH port while an ansible playbook is running. Also starting a
+#   second SSHd might not be that nice, so possibly start a dropbear or similar
+#   on a non-standard port.
+# - Fix Arcanist access for better CLI-fu
+
+- name: install dependencies
+  apt: name={{item}} state=installed
+  with_items:
+  - git-core
+  - nginx
+  - php5-fpm
+  - php5-json
+  - php5-mysql
+  - php5-curl
+  - php5-cli
+  - php5-gd
+  - php-apc
+  - python-pygments
+  - mysql-server
+  - sendmail
+  - sudo
+  notify:
+  - reload nginx
+  - restart php5-fpm
+
+- name: enable apt https transport
+  apt: name=apt-transport-https state=installed force=yes
+
+- name: create git user
+  user: name=git
+        comment="Git User"
+        system=yes
+        home=/var/git
+
+- name: create phabricator user
+  user: name=phd
+        comment="Phabricator Daemon"
+        system=yes
+        home=/var/phabricator-storage
+
+- name: clone phutil
+  git: repo=https://github.com/phacility/libphutil.git dest=/srv/libphutil
+
+- name: clone phabricator
+  git: repo=https://github.com/phacility/phabricator.git dest=/srv/phabricator
+  register: phabricator
+
+- name: clone arcanist
+  git: repo=https://github.com/phacility/arcanist dest=/srv/arcanist
+
+- name: copy phabricator configuration
+  copy: src=phabricator.nginx.conf dest=/etc/nginx/sites-available/phabricator.conf
+  notify: reload nginx
+
+- name: enable phabricator
+  file: src=/etc/nginx/sites-available/phabricator.conf dest=/etc/nginx/sites-enabled/phabricator.conf state=link
+  notify: reload nginx
+
+- name: copy phabricator init scripts
+  copy: src=init.d.phd dest=/etc/init.d/phd owner=root mode=0755
+
+- name: enable phabricator daemons
+  service: name=phd enabled=yes state=started
+
+- name: upgrade phabricator storage
+  command: /srv/phabricator/bin/storage upgrade --force
+  when: phabricator|changed
+
+- name: create phabricator storage
+  file: dest={{ item.name }}
+        state=directory
+        owner={{ item.owner }}
+        group=www-data
+        mode=0755
+  with_items:
+  - { name: "/var/phabricator-storage", owner: "www-data" }
+  - { name: "/var/phabricator-repositories", owner: "phd" }
+
+- name: configure phabricator
+  command: /srv/phabricator/bin/config set {{ item.key }} {{ item.value }}
+  with_dict:
+    phabricator.base-uri: 'http://130.149.58.143/'
+    phabricator.timezone: 'Europe/Berlin'
+    pygments.enabled: 'true'
+    repository.default-local-path: '/var/phabricator-repositories'
+    storage.local-disk.path: '/var/phabricator-storage/'
+    phd.user: 'phd'
+    diffusion.ssh-user: 'git'
+    environment.append-paths: "'[\"/bin\",\"/usr/bin\",\"/usr/local/bin\",\"/usr/lib/git-core\"]'"
+    diffusion.allow-http-auth: 'true'
+  notify: restart phabricator daemons
+
+- name: configure phabricator users
+  lineinfile: dest=/etc/sudoers
+              state=present
+              regexp="{{ item.regexp }}"
+              line="{{ item.line }}"
+              validate='visudo -cf %s'
+  with_items:
+  - { regexp: '^git', line: 'git ALL=(phd) SETENV: NOPASSWD: /usr/bin/git-upload-pack, /usr/bin/git-receive-pack, /usr/bin/hg, /usr/bin/svnserve' }
+  - { regexp: '^www-data', line: 'www-data ALL=(phd) SETENV: NOPASSWD: /usr/lib/git-core/git-http-backend, /usr/bin/hg' }
+
+- name: do not require a tty for sudo
+  lineinfile: dest=/et/sudoers regexp="^Defaults(\w+)requiretty" state=absent validate='visudo -cf %s'
+
+# Tuning
+- include: tuning.yml
+
+- name: enable nginx and php5-fpm
+  service: name={{ item }} enabled=yes state=started
+  with_items:
+  - nginx
+  - php5-fpm
