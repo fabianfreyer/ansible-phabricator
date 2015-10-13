@@ -8,3 +8,12 @@ dependencies:
   - php5-curl
   - php5-cli
   - php5-gd
+
+- role: mysql_server
+  mysqld_tunables:
+    max_allowed_packet: 32M
+    sql_mode: STRICT_ALL_TABLES
+    ft_boolean_syntax: "' |-><()~*:\\\"\\\"&^'"
+    ft_stopword_file: "/srv/phabricator/resources/sql/stopwords.txt"
+    ft_min_word_len: 3
+    innodb_buffer_pool_size: 800M
