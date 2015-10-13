@@ -33,16 +33,16 @@
   apt: name=apt-transport-https state=installed force=yes
 
 - name: create git user
-  user: name=git
+  user: name={{vcs_user}}
         comment="Git User"
         system=yes
         home=/var/git
 
 - name: create phabricator user
-  user: name=phd
+  user: name={{phd_user}}
         comment="Phabricator Daemon"
         system=yes
-        home=/var/phabricator-storage
+        home={{storage_path}}
 
 - name: clone phutil
   git: repo=https://github.com/phacility/libphutil.git dest=/srv/libphutil
@@ -55,7 +55,7 @@
   git: repo=https://github.com/phacility/arcanist dest=/srv/arcanist
 
 - name: copy phabricator configuration
-  copy: src=phabricator.nginx.conf dest=/etc/nginx/sites-available/phabricator.conf
+  template: src=phabricator.nginx.conf.jinja2 dest=/etc/nginx/sites-available/phabricator.conf
   notify: reload nginx
 
 - name: enable phabricator
@@ -82,16 +82,17 @@
   - { name: "/var/phabricator-storage", owner: "www-data" }
   - { name: "/var/phabricator-repositories", owner: "phd" }
 
+  # FIXME: make this idempotent
 - name: configure phabricator
   command: /srv/phabricator/bin/config set {{ item.key }} {{ item.value }}
   with_dict:
-    phabricator.base-uri: 'http://130.149.58.143/'
-    phabricator.timezone: 'Europe/Berlin'
+    phabricator.base-uri: "{{ base_uri }}"
+    phabricator.timezone: "{{ timezone }}"
     pygments.enabled: 'true'
-    repository.default-local-path: '/var/phabricator-repositories'
-    storage.local-disk.path: '/var/phabricator-storage/'
-    phd.user: 'phd'
-    diffusion.ssh-user: 'git'
+    repository.default-local-path: "{{ repository_path }}"
+    storage.local-disk.path: "{{ storage_path }}"
+    phd.user: "{{ phd_user }}"
+    diffusion.ssh-user: "{{ vcs_user }}"
     environment.append-paths: "'[\"/bin\",\"/usr/bin\",\"/usr/local/bin\",\"/usr/lib/git-core\"]'"
     diffusion.allow-http-auth: 'true'
   notify: restart phabricator daemons
@@ -103,7 +104,7 @@
               line="{{ item.line }}"
               validate='visudo -cf %s'
   with_items:
-  - { regexp: '^git', line: 'git ALL=(phd) SETENV: NOPASSWD: /usr/bin/git-upload-pack, /usr/bin/git-receive-pack, /usr/bin/hg, /usr/bin/svnserve' }
+  - { regexp: '^{{vcs_user}}', line: '{{vcs_user}} ALL=(phd) SETENV: NOPASSWD: /usr/bin/git-upload-pack, /usr/bin/git-receive-pack, /usr/bin/hg, /usr/bin/svnserve' }
   - { regexp: '^www-data', line: 'www-data ALL=(phd) SETENV: NOPASSWD: /usr/lib/git-core/git-http-backend, /usr/bin/hg' }
 
 - name: do not require a tty for sudo
