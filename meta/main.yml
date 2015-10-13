@@ -1,0 +1,10 @@
+---
+
+dependencies:
+- role: nginx_php5-fpm
+  php5_packages:
+  - php5-json
+  - php5-mysql
+  - php5-curl
+  - php5-cli
+  - php5-gd

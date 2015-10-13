@@ -13,21 +13,10 @@
   apt: name={{item}} state=installed
   with_items:
   - git-core
-  - nginx
-  - php5-fpm
-  - php5-json
-  - php5-mysql
-  - php5-curl
-  - php5-cli
-  - php5-gd
-  - php-apc
   - python-pygments
   - mysql-server
   - sendmail
   - sudo
-  notify:
-  - reload nginx
-  - restart php5-fpm
 
 - name: enable apt https transport
   apt: name=apt-transport-https state=installed force=yes
@@ -112,9 +101,3 @@
 
 # Tuning
 - include: tuning.yml
-
-- name: enable nginx and php5-fpm
-  service: name={{ item }} enabled=yes state=started
-  with_items:
-  - nginx
-  - php5-fpm
