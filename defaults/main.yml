@@ -2,7 +2,7 @@
 
 subdomain: ''
 phabricator_dir: ''
-base_uri: 'http://{% if subdomain %}{{subdomain}}.{% endif %}{{ ansible_fqdn }}/{{phabricator_dir}}'
+base_uri: 'http://{% if subdomain %}{{subdomain}}.{% endif %}{{ansible_fqdn}}/{{phabricator_dir}}'
 timezone: ''
 repository_path: '/var/phabricator-repositories'
 storage_path: '/var/phabricator-storage'

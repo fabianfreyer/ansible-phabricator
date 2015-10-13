@@ -8,27 +8,27 @@
 # Short-Description: phabricator
 # Description:       manages phd
 ### END INIT INFO
- 
+
 # Author: Alexander Reitzel <funtimecoding@gmail.com>
 # Do NOT "set -e"
- 
+
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="phabricator daemons"
 NAME=phd
 USER=phd
 DAEMON=/srv/phabricator/bin/${NAME}
 SCRIPTNAME=/etc/init.d/${NAME}
- 
+
 [ -x "${DAEMON}" ] || exit 0
 [ -r /etc/default/${NAME} ] && . /etc/default/${NAME}
 . /lib/init/vars.sh
 . /lib/lsb/init-functions
- 
+
 run_as_user()
 {
     sudo -u "${USER}" -s /bin/bash -c "${1}"
 }
- 
+
 is_running()
 {
     if run_as_user "${DAEMON} status"; then
@@ -37,29 +37,29 @@ is_running()
         return 1
     fi
 }
- 
+
 do_start()
 {
     if is_running; then
         return 1
     fi
- 
+
     run_as_user "${DAEMON} start"
- 
+
     return 0
 }
- 
+
 do_stop()
 {
     if ! is_running; then
         return 1
     fi
- 
+
     run_as_user "${DAEMON} stop"
- 
+
     return 0
 }
- 
+
 case "${1}" in
     start)
         [ "${VERBOSE}" != no ] && log_daemon_msg "Starting ${DESC}" "${NAME}"
