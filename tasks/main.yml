@@ -98,5 +98,3 @@
 - name: do not require a tty for sudo
   lineinfile: dest=/et/sudoers regexp="^Defaults(\w+)requiretty" state=absent validate='visudo -cf %s'
 
-# Tuning
-- include: tuning.yml

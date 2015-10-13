@@ -8,6 +8,9 @@ dependencies:
   - php5-curl
   - php5-cli
   - php5-gd
+  tunables:
+    post_max_size: 32M
+    opcache.validate_timestamps: 0
 
 - role: mysql_server
   mysqld_tunables:
