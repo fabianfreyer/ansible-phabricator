@@ -1,0 +1,44 @@
+- name: copy phabricator init scripts
+  copy: src=init.d.phd dest=/etc/init.d/phd owner=root mode=0755
+
+- name: enable phabricator daemons
+  service: name=phd enabled=yes state=started
+
+- name: upgrade phabricator storage
+  command: /srv/phabricator/bin/storage upgrade --force
+  when: phabricator|changed
+
+- name: create phabricator storage
+  file: dest={{item.name}}
+        state=directory
+        owner={{item.owner}}
+        group=www-data
+        mode=0755
+  with_items:
+  - { name: "/var/phabricator-storage", owner: "www-data" }
+  - { name: "/var/phabricator-repositories", owner: "phd" }
+
+  # FIXME: make this idempotent
+- name: configure phabricator
+  command: /srv/phabricator/bin/config set {{item.key}} {{item.value}}
+  with_dict:
+    phabricator.base-uri: "{{base_uri}}"
+    phabricator.timezone: "{{timezone}}"
+    pygments.enabled: 'true'
+    repository.default-local-path: "{{repository_path}}"
+    storage.local-disk.path: "{{storage_path}}"
+    phd.user: "{{phd_user}}"
+    diffusion.ssh-user: "{{vcs_user}}"
+    environment.append-paths: "'[\"/bin\",\"/usr/bin\",\"/usr/local/bin\",\"/usr/lib/git-core\"]'"
+    diffusion.allow-http-auth: 'true'
+  notify: restart phabricator daemons
+
+- name: configure phabricator users
+  lineinfile: dest=/etc/sudoers
+              state=present
+              regexp="{{item.regexp}}"
+              line="{{item.line}}"
+              validate='visudo -cf %s'
+  with_items:
+  - { regexp: '^{{vcs_user}}', line: '{{vcs_user}} ALL=(phd) SETENV: NOPASSWD: /usr/bin/git-upload-pack, /usr/bin/git-receive-pack, /usr/bin/hg, /usr/bin/svnserve' }
+  - { regexp: '^www-data', line: 'www-data ALL=(phd) SETENV: NOPASSWD: /usr/lib/git-core/git-http-backend, /usr/bin/hg' }

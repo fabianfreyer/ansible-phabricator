@@ -1,0 +1,9 @@
+- name: clone phutil
+  git: repo=https://github.com/phacility/libphutil.git dest=/srv/libphutil
+
+- name: clone phabricator
+  git: repo=https://github.com/phacility/phabricator.git dest=/srv/phabricator
+  register: phabricator
+
+- name: clone arcanist
+  git: repo=https://github.com/phacility/arcanist dest=/srv/arcanist

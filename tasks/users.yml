@@ -1,0 +1,11 @@
+- name: create git user
+  user: name={{vcs_user}}
+        comment="Git User"
+        system=yes
+        home=/var/git
+
+- name: create phabricator user
+  user: name={{phd_user}}
+        comment="Phabricator Daemon"
+        system=yes
+        home={{storage_path}}

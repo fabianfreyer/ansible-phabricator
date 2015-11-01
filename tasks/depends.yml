@@ -1,0 +1,10 @@
+- name: install dependencies
+  apt: name={{item}} state=installed
+  with_items:
+  - git-core
+  - python-pygments
+  - sendmail
+  - sudo
+
+- name: enable apt https transport
+  apt: name=apt-transport-https state=installed force=yes
