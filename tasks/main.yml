@@ -11,9 +11,8 @@
 
 - include: depends.yml
 - include: users.yml
+- include: git_ssh.yml
 - include: install.yml
 - include: nginx.yml
 - include: configure.yml
 
-- name: do not require a tty for sudo
-  lineinfile: dest=/et/sudoers regexp="^Defaults(\w+)requiretty" state=absent validate='visudo -cf %s'

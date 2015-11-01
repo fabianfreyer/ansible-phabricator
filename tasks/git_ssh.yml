@@ -1,0 +1,24 @@
+# Use the ssh configuration described in this
+# Phabricator bug: https://secure.phabricator.com/D13719
+# because it does not require a separate sshd running on
+# a different port.
+
+- name: do not require a tty for sudo
+  lineinfile: dest=/et/sudoers regexp="^Defaults(\w+)requiretty" state=absent validate='visudo -cf %s'
+
+- name: test blockinfile
+  blockinfile:
+    dest: /etc/ssh/sshd_config
+    block: |
+      Match User {{vcs_user}}
+        AllowUsers {{vcs_user}}
+        AuthorizedKeysCommand /srv/phabricator/bin/ssh-auth
+        AuthorizedKeysCommandUser {{vcs_user}}
+        PasswordAuthentication no
+        PubkeyAuthentication yes
+    backup: yes
+  notify: restart sshd
+  tags:
+  - phabricator
+  - git
+
