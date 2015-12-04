@@ -30,9 +30,9 @@ install:
 script:
 - "ansible-playbook -i tests/travis-inventory tests/travis-playbook.yml --syntax-check"
 - "ansible-playbook -i tests/travis-inventory tests/travis-playbook.yml --connection=local --sudo"
+- "ansible-playbook -i tests/travis-inventory tests/travis-playbook.yml --connection=local --sudo | tee idempotence.log"
 - >
-  ansible-playbook -i tests/travis-inventory tests/travis-playbook.yml --connection=local --sudo
-  | grep -q 'changed=0.*failed=0'
+  grep -q 'changed=0.*failed=0' idempotence.log
   && (echo 'Idempotence test: pass' && exit 0)
   || (echo 'Idempotence test: fail' && exit 1)
 - >
