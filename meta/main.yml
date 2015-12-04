@@ -1,6 +1,8 @@
 ---
 
 dependencies:
+- role: blockinfile
+
 - role: nginx_php5-fpm
   php5_packages:
   - php5-json
