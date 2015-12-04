@@ -3,6 +3,12 @@
 # because it does not require a separate sshd running on
 # a different port.
 
+- name: ensure sshd is installed
+  apt: name=openssh-server
+
+- name: start sshd
+  service: name=ssh state=started
+
 - name: do not require a tty for sudo
   lineinfile: dest=/et/sudoers regexp="^Defaults(\w+)requiretty" state=absent validate='visudo -cf %s'
 
