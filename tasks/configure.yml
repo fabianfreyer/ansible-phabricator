@@ -1,5 +1,4 @@
-- name: copy phabricator init scripts
-  copy: src=init.d.phd dest=/etc/init.d/phd owner=root mode=0755
+- include: init.yml
 
 - name: enable phabricator daemons
   service: name=phd enabled=yes state=started

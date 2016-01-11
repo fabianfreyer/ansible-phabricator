@@ -1,0 +1,43 @@
+# FreeBSD does not have /proc, so we can't check there for the init system.
+- name: Set init == freebsd
+  set_fact:
+    init: freebsd
+  when: ansible_system == "FreeBSD"
+
+- name: check PID 1
+  stat:
+    path: /proc/1/exe
+  register: pid1
+  when: init is undefined
+
+- name: check /sbin/init
+  stat: path=/sbin/init
+  when: (init is undefined) and (pid1.lnk_source == "/sbin/init")
+  register: sbin_init
+
+- set_fact:
+    init: systemd
+  when: (init is undefined) and ( pid1.lnk_source == "/lib/systemd/systemd" or (sbin_init is defined and sbin_init.lnk_source == "/lib/systemd/systemd"))
+
+- set_fact:
+    init: upstart
+  when: (init is undefined) and ( pid1.lnk_source == "/sbin/upstart" or (sbin_init is defined and sbin_init.lnk_source == "/sbin/upstart"))
+
+- set_fact:
+    init: sysvinit
+  when: init is undefined and pid1.lnk_source == "/sbin/init"
+
+- name: copy phabricator init scripts
+  copy: src=init.d.phd dest=/etc/init.d/phd owner=root mode=0755
+  when: init == "sysvinit"
+
+- debug: var=init
+
+- name: install phabricator unit file
+  template:
+    src: phd.service.jinja2
+    dest: /etc/systemd/system/phd.service
+  when: init == "systemd"
+
+# ToDo: Upstart
+

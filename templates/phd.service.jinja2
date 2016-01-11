@@ -1,0 +1,16 @@
+[Unit]
+Description=phabricator-phd
+After=network.target
+Before=nginx.service
+
+[Service]
+User={{phd_user}}
+Group={{phd_user}}
+Type=oneshot
+Environment="PATH=/sbin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/srv/phabricator/bin/phd start
+ExecStop=/srv/phabricator/bin/phd stop
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
