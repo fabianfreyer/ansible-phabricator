@@ -1,6 +1,6 @@
 ---
-- src: https://github.com/yaegashi/ansible-role-blockinfile.git
-  name: blockinfile
+- src: https://github.com/fabianfreyer/ansible-nginx_site.git
+  name: nginx_site
 
 - src: https://github.com/fabianfreyer/ansible-nginx_php5-fpm.git
   name: nginx_php5-fpm

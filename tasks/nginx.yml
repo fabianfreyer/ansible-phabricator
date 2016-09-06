@@ -1,7 +1,0 @@
-- name: copy phabricator configuration
-  template: src=phabricator.nginx.conf.jinja2 dest=/etc/nginx/sites-available/phabricator.conf
-  notify: reload nginx
-
-- name: enable phabricator
-  file: src=/etc/nginx/sites-available/phabricator.conf dest=/etc/nginx/sites-enabled/phabricator.conf state=link
-  notify: reload nginx

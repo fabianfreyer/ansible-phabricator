@@ -13,6 +13,5 @@
 - include: users.yml
 - include: git_ssh.yml
 - include: install.yml
-- include: nginx.yml
 - include: configure.yml
 
