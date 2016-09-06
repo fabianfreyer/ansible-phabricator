@@ -1,11 +1,11 @@
 - include: init.yml
 
-- name: enable phabricator daemons
-  service: name=phd enabled=yes state=started
-
 - name: upgrade phabricator storage
   command: /srv/phabricator/bin/storage upgrade --force
   when: phabricator|changed
+  
+- name: enable phabricator daemons
+  service: name=phd enabled=yes state=started
 
 - name: create phabricator storage
   file: dest={{item.name}}
