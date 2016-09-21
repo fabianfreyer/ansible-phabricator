@@ -10,6 +10,7 @@
 
 - name: restart phabricator daemons
   service: name=phd state=restarted
+  when: do_not_restart_phd is not defined
 
 - name: restart aphlict
   service: name=aphlict state=restarted

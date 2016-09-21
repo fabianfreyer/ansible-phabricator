@@ -44,6 +44,7 @@
   template:
     src: '{{item}}.service.jinja2'
     dest: /etc/systemd/system/{{item}}.service
+  tags: enable_daemons
   with_items:
   - phd
   - aphlict

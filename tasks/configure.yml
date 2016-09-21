@@ -9,6 +9,8 @@
     name: '{{item}}'
     enabled: yes
     state: started
+  tags:
+  - enable_daemons
   with_items:
   - phd
   - aphlict
