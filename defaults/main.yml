@@ -8,3 +8,6 @@ repository_path: '/var/phabricator-repositories'
 storage_path: '/var/phabricator-storage'
 phd_user: 'phd'
 vcs_user: 'git'
+nodenv_user: '{{phd_user}}'
+nodenv_group: '{{phd_user}}'
+node_version: 6.5.0

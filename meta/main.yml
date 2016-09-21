@@ -24,6 +24,12 @@ dependencies:
       fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
       fastcgi_param  SERVER_SOFTWARE    nginx/$nginx_version;
       fastcgi_param  REMOTE_ADDR        $remote_addr;
+    "/ws/": |
+      proxy_pass http://127.0.0.1:22280;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_read_timeout 999999999;
   nginx_site_tuning:
     client_max_body_size: 32m
 

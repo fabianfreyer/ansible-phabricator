@@ -11,5 +11,8 @@
 - name: restart phabricator daemons
   service: name=phd state=restarted
 
+- name: restart aphlict
+  service: name=aphlict state=restarted
+
 - name: restart sshd
   service: name=ssh state=restarted

@@ -11,7 +11,9 @@
 
 - include: depends.yml
 - include: users.yml
+- include: nodenv.yml
 - include: git_ssh.yml
 - include: install.yml
+- include: aphlict.yml
 - include: configure.yml
 

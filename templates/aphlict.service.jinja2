@@ -1,0 +1,16 @@
+[Unit]
+Description=phabricator-aphlict
+After=network.target
+Before=nginx.service
+
+[Service]
+User={{phd_user}}
+Group=ssl-cert
+Type=oneshot
+Environment="PATH=/sbin:/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:{{storage_path}}/.nodenv/shims"
+ExecStart=/srv/phabricator/bin/aphlict start
+ExecStop=/srv/phabricator/bin/aphlict stop
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

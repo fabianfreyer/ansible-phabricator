@@ -1,0 +1,10 @@
+---
+
+- name: install aphlict dependencies
+  command: su - {{nodenv_user}} -c "cd /srv/phabricator/support/aphlict/server/ && npm install ws"
+
+- name: install aphlict configuration
+  template:
+    src: aphlict.custom.json.jinja2
+    dest: /srv/phabricator/conf/aphlict/aphlict.custom.json
+  notify: restart aphlict

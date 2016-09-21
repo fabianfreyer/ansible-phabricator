@@ -3,9 +3,15 @@
 - name: upgrade phabricator storage
   command: /srv/phabricator/bin/storage upgrade --force
   when: phabricator|changed
-  
+
 - name: enable phabricator daemons
-  service: name=phd enabled=yes state=started
+  service:
+    name: '{{item}}'
+    enabled: yes
+    state: started
+  with_items:
+  - phd
+  - aphlict
 
 - name: create phabricator storage
   file: dest={{item.name}}
@@ -28,8 +34,11 @@
     storage.local-disk.path: "{{storage_path}}"
     phd.user: "{{phd_user}}"
     diffusion.ssh-user: "{{vcs_user}}"
-    environment.append-paths: "'[\"/bin\",\"/usr/bin\",\"/usr/local/bin\",\"/usr/lib/git-core\"]'"
+    environment.append-paths: '[\"/bin\",\"/usr/bin\",\"/usr/local/bin\",\"/usr/lib/git-core\"]'
     diffusion.allow-http-auth: 'true'
+    notification.servers: '{{ lookup("template", "notification.servers.jinja2") | replace("\\n","") }}'
+  tags:
+  - phabricator_config
   notify: restart phabricator daemons
 
 - name: configure phabricator users

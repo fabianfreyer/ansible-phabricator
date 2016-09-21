@@ -28,15 +28,25 @@
   when: init is undefined and pid1.lnk_source == "/sbin/init"
 
 - name: copy phabricator init scripts
-  copy: src=init.d.phd dest=/etc/init.d/phd owner=root mode=0755
+  copy:
+    src: init.d.{{item}}
+    dest: /etc/init.d/{{item}}
+    owner: root
+    mode: 0755
+  with_items:
+  - phd
+  - aphlict
   when: init == "sysvinit"
 
 - debug: var=init
 
-- name: install phabricator unit file
+- name: install phabricator unit files
   template:
-    src: phd.service.jinja2
-    dest: /etc/systemd/system/phd.service
+    src: '{{item}}.service.jinja2'
+    dest: /etc/systemd/system/{{item}}.service
+  with_items:
+  - phd
+  - aphlict
   when: init == "systemd"
 
 # ToDo: Upstart
